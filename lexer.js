@@ -35,6 +35,8 @@ const analyze = source => {
   let lexeme = ''           // Lexema sendo lido
   let char = ''             // Caractere sendo lido
   let pos                   // Posição sendo processada
+  let row = 1               // Primeira linha
+  let col = 1               // Primeira coluna
   const symbolsTable = []   // Tabela de símbolos
 
   // Acrescenta uma quebra de linha ao final do código-fonte
@@ -94,7 +96,7 @@ const analyze = source => {
         symbolsTable.push({lexeme, token: 'number', value: lexeme})
         break
 
-      case 6.10:  // assign
+      case 6.11:  // assign
         symbolsTable.push({lexeme, token: 'assign'})
         break
 
@@ -106,9 +108,9 @@ const analyze = source => {
   }
 
   const displayError = () => {
-    console.error(`ERROR: unexpected char ${char} at ${pos} (state ${state}).`)
+    console.error(`ERROR [${row}:${col}]: unexpected char "${char}" (state ${state}).`)
     // Quando houver erro, termina o programa
-    process.exit(1)
+    process.exit(-1)
   }
 
   // Percorre todo o código-fonte, caractere a caractere
@@ -116,6 +118,11 @@ const analyze = source => {
 
     // Lê um caractere do código-fonte
     char = source.charAt(pos)
+
+    if(char == '\n') {
+      row++
+      col = 0
+    }
 
     switch(state) {
       case 0:
@@ -235,12 +242,16 @@ const analyze = source => {
         break
 
       case 17:
-        if(char === '=') terminate(6.10)
+        if(char === '=') terminate(6.11)
         else displayError()
         break
 
-
     }
+
+    // Incrementa o número da coluna se o caractere não for retorno de carro (\r)
+    if (char !== '\r') col++
+
+    
   }
 
   // Exibe a tabela de símbolos
